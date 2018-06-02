@@ -5,7 +5,7 @@ from shadowsocks import encrypt as encryptx
 import curio
 
 
-async def echo_server(address):
+async def socks5_server(address):
     sock = socket(AF_INET, SOCK_STREAM)
     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     sock.bind(address)
@@ -14,9 +14,9 @@ async def echo_server(address):
     async with sock:
         while True:
             client, addr = await sock.accept()
-            await spawn(echo_client, client, addr, daemon=True)
+            await spawn(socks5_handle, client, addr, daemon=True)
 
-async def echo_client(client, addr):
+async def socks5_handle(client, addr):
     print('accept:', addr)
     async with client:
         data = await client.recv(3)
@@ -48,4 +48,4 @@ async def pipe(src, dst, crypt):
 
 
 if __name__ == '__main__':
-    run(echo_server, ('',25000))
+    run(socks5_server, ('',25000))
