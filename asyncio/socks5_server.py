@@ -66,7 +66,7 @@ async def socks5_handle(reader, writer):
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    bind_listen = asyncio.start_server(socks5_handle, host='127.0.0.1', port=1973)
+    bind_listen = asyncio.start_server(socks5_handle, host='0.0.0.0', port=20000)
     server = loop.run_until_complete(bind_listen)
     try:
         loop.run_forever()
