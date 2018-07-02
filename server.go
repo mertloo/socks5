@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"time"
 )
 
 const (
@@ -93,7 +92,6 @@ func (c *conn) cmdConnect() error {
 		return err
 	}
 	c.remoteAddr = fmt.Sprintf("%s:%d", c.buf[:alen], uint16(c.buf[alen])<<8|uint16(c.buf[alen+1]))
-	t := time.Now()
 	c.remoteConn, err = c.dial()
 	if err != nil {
 		return err
@@ -160,7 +158,7 @@ func (srv *Server) newConn(rwc net.Conn) *conn {
 	c := &conn{
 		server: srv,
 		rwc:    rwc,
-		buf:    make([]byte, 1024),
+		buf:    make([]byte, 512),
 	}
 	return c
 }
