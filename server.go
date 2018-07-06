@@ -23,9 +23,7 @@ var (
 	socks5NotImplErr = errors.New("socks5 not impl error")
 )
 
-type dialer interface {
-	Dial(addr string) (net.Conn, error)
-}
+type DialFunc func(addr string) (net.Conn, error)
 
 type conn struct {
 	server     *Server
@@ -33,7 +31,7 @@ type conn struct {
 	buf        []byte
 	remoteAddr string
 	remoteConn net.Conn
-	dialer
+	dialFunc   DialFunc
 }
 
 func (c *conn) serve() {
@@ -120,8 +118,8 @@ func (c *conn) pipe(dst, src net.Conn, quit chan struct{}) {
 }
 
 func (c *conn) dial() (net.Conn, error) {
-	if c.dialer != nil {
-		return c.dialer.Dial(c.remoteAddr)
+	if c.dialFunc != nil {
+		return c.dialFunc(c.remoteAddr)
 	}
 	return net.Dial("tcp", c.remoteAddr)
 }
@@ -132,6 +130,7 @@ func (c *conn) close() {
 
 type Server struct {
 	Addr string
+	Dial DialFunc
 }
 
 func (srv *Server) ListenAndServe() error {
@@ -156,9 +155,10 @@ func (srv *Server) Serve(l net.Listener) error {
 
 func (srv *Server) newConn(rwc net.Conn) *conn {
 	c := &conn{
-		server: srv,
-		rwc:    rwc,
-		buf:    make([]byte, 512),
+		server:   srv,
+		rwc:      rwc,
+		buf:      make([]byte, 512),
+		dialFunc: srv.Dial,
 	}
 	return c
 }
